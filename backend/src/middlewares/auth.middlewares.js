@@ -1,6 +1,6 @@
 const jwt = require("jsonwebtoken")
 const blackListModel = require("../models/blacklist.model")
-
+const redis = require("../config/cache")
 
 async function authUser(req,res,next){
     const token = req.cookies.token;
@@ -11,13 +11,11 @@ async function authUser(req,res,next){
         })
     }
 
-    const isAlreadyBlacklisted = await blackListModel.findOne({
-        token
-    })
+    const isAlreadyBlacklisted = await redis.get(token)
 
     if(isAlreadyBlacklisted){
         return res.status(401).json({
-            message:"token is invalid"
+            message:"token is already expired"
         })
     }
 
